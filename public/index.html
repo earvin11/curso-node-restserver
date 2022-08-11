@@ -4,11 +4,80 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acceso denegado</title>
+    <title>Google - Sign In</title>
 </head>
 <body>
 
-    <h1>Acceso denegado</h1>
+    <h1>Google - Sign In</h1>
+    <hr>
+
+    <div id="g_id_onload"
+         data-client_id="26120918459-96ijidvb49pki1vbtu19f6f69un4lmio.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse"
+         data-auto_prompt="false">
+      </div>
+      <div class="g_id_signin"
+         data-type="standard"
+         data-size="large"
+         data-theme="outline"
+         data-text="sign_in_with"
+         data-shape="rectangular"
+         data-logo_alignment="left">
+      </div>
+
+      <button id="google_signout">
+         Signout
+      </button>
+
+
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <script>
+        function handleCredentialResponse(response) {
+           
+           //Response Token : ID_TOKEN
+         //   console.log('Id Token', response.credential);
+
+         const body = { id_token : response.credential };
+
+         fetch('http://localhost:8080/api/auth/google', {
+            method: 'POST',
+            headers: {
+               'Content-Type' : 'application/json'
+            },
+            body: JSON.stringify(body)
+         })
+               .then( resp => resp.json() )
+               .then(  resp => {
+                  console.log(resp)
+                  //Guarda en el localStorage bajo el nombre email lo que vaya en el segundo argumento
+                  localStorage.setItem('email', resp.usuario.correo)
+               })
+               .catch( console.warn )
+
+        }
+
+        //Referencia al boton de signout
+        const button = document.getElementById('google_signout');
+        //Evento okclick
+        button.onclick = () =>{
+
+           console.log(google.accounts.id);
+           google.accounts.id.disableAutoSelect();
+         
+           //Cierra la sesion del correo que este en el primer argumento
+           google.accounts.id.revoke( localStorage.getItem('email'), done =>{
+              //Luego en este callback limpia el localStorage para borrar el correo
+              localStorage.clear();
+              //Recarga la pagina
+              location.reload();
+            });
+
+        }
+
+
+      </script>
     
 </body>
 </html>
